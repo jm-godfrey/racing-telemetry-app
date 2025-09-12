@@ -7,7 +7,7 @@ set :linked_dirs,             fetch(:linked_dirs, []).push('log', 'tmp/pids', 'p
 
 ## Ruby configuration
 set :rvm_type,                    :system
-set :rvm_ruby_version,            'ruby-3.3.4'
+set :rvm_ruby_version,            'ruby-3.4.5'
 set :rvm_path,                    '/usr/local/rvm'
 
 # Currently Passenger is installed against the 'default' Ruby version
