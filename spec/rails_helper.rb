@@ -81,13 +81,13 @@ RSpec.configure do |config|
   config.around(:each, error_page: true) do |example|
     # Rails caches the action_dispatch setting. Need to remove it for the new setting to apply.
     Rails.application.remove_instance_variable(:@app_env_config) if Rails.application.instance_variable_defined?(:@app_env_config)
-    Rails.application.config.action_dispatch.show_exceptions = true
+    Rails.application.config.action_dispatch.show_exceptions = :all
     Rails.application.config.consider_all_requests_local = false
 
     example.run
 
     Rails.application.remove_instance_variable(:@app_env_config) if Rails.application.instance_variable_defined?(:@app_env_config)
-    Rails.application.config.action_dispatch.show_exceptions = false
+    Rails.application.config.action_dispatch.show_exceptions = :rescuable
     Rails.application.config.consider_all_requests_local = true
   end
 
@@ -120,7 +120,3 @@ Capybara.configure do |config|
 end
 
 Capybara.automatic_label_click = true
-
-def sleep_for_js(sleep_time: 0.5)
-  sleep sleep_time
-end

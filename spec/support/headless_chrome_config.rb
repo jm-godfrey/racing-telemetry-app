@@ -8,6 +8,8 @@ Capybara.register_driver :headless_chrome do |app|
   chrome_options.add_argument('--disable-extensions')
   chrome_options.add_argument('--disable-popup-blocking')
   chrome_options.add_argument('--window-size=1920,1080')
+  chrome_options.add_argument('--disable-backgrounding-occluded-windows')
+  chrome_options.add_argument('--guest')
 
   chrome_options.add_preference(:download, directory_upgrade: true, prompt_for_download: false, default_directory: '/tmp')
   chrome_options.add_preference(:browser, set_download_behavior: { behavior: 'allow' })
