@@ -64,7 +64,7 @@ development:
   # Keys not described there are documented inline and in https://github.com/shakacode/shakapacker/
   dev_server:
     # For running dev server with https, set `server: https`.
-    # server: https
+    server: http
 
     host: localhost
     port: 3035
@@ -83,7 +83,7 @@ development:
     # live_reload: true
     client:
       # Should we show a full-screen overlay in the browser when there are compiler errors or warnings?
-      overlay: true
+      overlay: false
       # May also be a string
       # webSocketURL:
       #  hostname: '0.0.0.0'

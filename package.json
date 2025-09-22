@@ -26,8 +26,8 @@
     "terser-webpack-plugin": "5",
     "webpack": "5",
     "webpack-assets-manifest": "5",
-    "webpack-cli": "4",
-    "webpack-dev-server": "4",
+    "webpack-cli": "6",
+    "webpack-dev-server": "5",
     "webpack-merge": "5"
   },
   "version": "0.1.0",
