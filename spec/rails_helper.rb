@@ -47,6 +47,7 @@ RSpec.configure do |config|
   # (e.g. if a process got killed and things weren't cleaned up)
   config.before(:suite) do
     DatabaseCleaner.clean_with(:truncation)
+    Devise.configure_warden!
   end
 
   # Use transactions for non-javascript tests as it is much faster than truncation
