@@ -77,7 +77,7 @@ gem 'sentry-rails'
 
 group :development do
   gem 'letter_opener'
-  gem 'annotate'
+  gem 'annotaterb'
   gem 'brakeman'
   gem 'bundler-audit'
 
