@@ -111,7 +111,6 @@ GEM
     bundler-audit (0.9.2)
       bundler (>= 1.2.0, < 3)
       thor (~> 1.0)
-    byebug (12.0.0)
     cancancan (3.6.1)
     capistrano (3.19.2)
       airbrussh (>= 1.0.0)
@@ -158,6 +157,9 @@ GEM
       database_cleaner-core (~> 2.0)
     database_cleaner-core (2.0.1)
     date (3.4.1)
+    debug (1.11.0)
+      irb (~> 1.10)
+      reline (>= 0.3.8)
     delayed_job (4.1.13)
       activesupport (>= 3.0, < 9.0)
     delayed_job_active_record (4.1.11)
@@ -417,7 +419,6 @@ DEPENDENCIES
   bootsnap
   brakeman
   bundler-audit
-  byebug
   cancancan
   capistrano
   capistrano-bundler
@@ -429,6 +430,7 @@ DEPENDENCIES
   capybara-lockstep
   daemons
   database_cleaner
+  debug
   delayed_job
   delayed_job_active_record
   devise
@@ -443,7 +445,7 @@ DEPENDENCIES
   letter_opener
   mutex_m
   pg (~> 1.1)
-  puma (>= 5.0)
+  puma (< 8)
   rails (~> 8.0.2, >= 8.0.2.1)
   rspec-rails
   sanitize_email
