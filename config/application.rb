@@ -27,6 +27,7 @@ module Project
     config.action_dispatch.rescue_responses['ActionDispatch::Http::MimeNegotiation::InvalidType'] = :bad_request
     config.action_dispatch.rescue_responses['Mime::Type::InvalidMimeType'] = :bad_request
     config.action_dispatch.rescue_responses['URI::InvalidURIError'] = :bad_request
+    config.action_dispatch.rescue_responses['CanCan::AccessDenied'] = :forbidden
 
     config.time_zone = 'London'
 
