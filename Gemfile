@@ -58,14 +58,14 @@ gem 'sentry-ruby'
 gem 'sentry-rails'
 
 group :development, :test do
-  # Use console on exceptions pages [https://github.com/rails/web-console]
-  gem "web-console"
-
   gem 'rspec-rails'
   gem 'factory_bot_rails'
 end
 
 group :development do
+  # Use console on exceptions pages [https://github.com/rails/web-console]
+  gem "web-console"
+
   gem "debug", platforms: %i[ mri windows ], require: "debug/prelude"
 
   gem 'letter_opener'
