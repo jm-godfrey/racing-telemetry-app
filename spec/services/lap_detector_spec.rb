@@ -35,4 +35,17 @@ RSpec.describe LapDetector do
     laps = described_class.new(with_warmup, **line).laps
     expect(laps.length).to eq(2)
   end
+
+  it "debounces jitter crossings closer than min_lap_ms" do
+    # Three crossings in quick succession (jitter), then a clean one much later.
+    jittery = [
+      { offset_ms: 0,      lat: 0.0, lon: -1.0 },
+      { offset_ms: 1000,   lat: 0.0, lon:  1.0 }, # cross ~500 (kept, first)
+      { offset_ms: 2000,   lat: 0.0, lon: -1.0 }, # cross ~1500 (gap 1000, dropped)
+      { offset_ms: 3000,   lat: 0.0, lon:  1.0 }, # cross ~2500 (gap 2000, dropped)
+      { offset_ms: 20_000, lat: 0.0, lon: -1.0 }  # cross ~11500 (gap large, kept)
+    ]
+    laps = described_class.new(jittery, **line, min_lap_ms: 5_000).laps
+    expect(laps.length).to eq(1)
+  end
 end
