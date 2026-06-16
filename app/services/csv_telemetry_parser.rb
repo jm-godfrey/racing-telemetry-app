@@ -21,11 +21,16 @@ class CsvTelemetryParser
   end
 
   def rows
-    table = CSV.new(@io, headers: true, header_converters: ->(h) { h.strip })
+    table = CSV.new(@io, headers: true, header_converters: ->(h) { h.strip }, skip_blanks: true)
     parsed = table.read
     validate_headers!(parsed.headers)
 
-    parsed.map do |row|
+    # Loggers often end a file with a blank line or a partial row (e.g. a bare
+    # timestamp with no readings). Skip any row missing a required value rather
+    # than emitting a phantom all-zero sample (nil.to_f would become 0.0).
+    parsed.filter_map do |row|
+      next if COLUMN_MAP.keys.any? { |header| row[header].to_s.strip.empty? }
+
       COLUMN_MAP.each_with_object({}) do |(header, key), out|
         out[key] = key == :timestamp ? row[header].to_i : row[header].to_f
       end

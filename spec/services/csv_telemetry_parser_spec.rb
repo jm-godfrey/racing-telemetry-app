@@ -24,4 +24,14 @@ RSpec.describe CsvTelemetryParser do
     expect { described_class.new(StringIO.new(bad)).rows }
       .to raise_error(CsvTelemetryParser::InvalidFormat, /missing/i)
   end
+
+  it "skips trailing blank lines and partial rows" do
+    messy = "timestamp,lat,lon,speed,accelX,accelY,accelZ\n" \
+            "1000,53.0,-1.0,5.0,0.1,0.2,0.98\n" \
+            "\n" \
+            "1100\n"
+    rows = described_class.new(StringIO.new(messy)).rows
+    expect(rows.length).to eq(1)
+    expect(rows.first[:timestamp]).to eq(1000)
+  end
 end
