@@ -1,0 +1,15 @@
+.auth-wrapper
+  .auth-card.card.shadow-sm
+    .card-body.p-4
+      %h1.h4.fw-bold.text-center.mb-1
+        %i.bi-flag-fill.text-danger
+        Telemetry
+      %p.text-muted.text-center.mb-4 Create your account
+      = simple_form_for(resource, as: resource_name, url: registration_path(resource_name)) do |f|
+        = f.input :username, autofocus: true, input_html: { autocomplete: "username" }
+        = f.input :password, input_html: { autocomplete: "new-password" }
+        = f.input :password_confirmation, input_html: { autocomplete: "new-password" }
+        = f.button :submit, "Create account", class: "btn btn-primary w-100"
+      %p.text-center.mt-3.mb-0
+        Already have an account?
+        = link_to "Log in", new_session_path(resource_name)

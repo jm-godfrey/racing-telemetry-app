@@ -21,18 +21,26 @@
     = javascript_pack_tag 'application'
 
   %body
-    %header.navbar.navbar-expand-lg.bg-light.mb-3
-      .container-fluid
-        = link_to '/', class: 'navbar-brand fw-bold' do
-          %i.bi-flag-fill.text-danger
-          Telemetry
-        %button.navbar-toggler{ type: :button, data: { bs_toggle: :collapse, bs_target: '#navbar-content' }, aria: { controls: 'navbar-content', expanded: 'false', label: 'Toggle navigation' } }
-          %span.navbar-toggler-icon
-        #navbar-content.navbar-collapse.collapse
-          %nav.navbar-nav
-            = link_to '/', class: 'active nav-link' do
-              %i.bi-house-fill
-              Home
+    - unless controller.devise_controller?
+      %header.navbar.navbar-expand-lg.navbar-dark.bg-dark.mb-4
+        .container
+          = link_to root_path, class: "navbar-brand fw-bold" do
+            %i.bi-flag-fill.text-danger
+            Telemetry
+          %button.navbar-toggler{ type: :button, data: { bs_toggle: :collapse, bs_target: "#navbar-content" }, aria: { controls: "navbar-content", expanded: "false", label: "Toggle navigation" } }
+            %span.navbar-toggler-icon
+          #navbar-content.navbar-collapse.collapse
+            - if user_signed_in?
+              %nav.navbar-nav.ms-auto.align-items-lg-center
+                = link_to "Dashboard", root_path, class: "nav-link#{' active' if current_page?(root_path)}"
+                = link_to "My Races", races_path, class: "nav-link#{' active' if current_page?(races_path)}"
+                .nav-item.dropdown
+                  %a.nav-link.dropdown-toggle{ href: "#", role: "button", data: { bs_toggle: "dropdown" }, aria: { expanded: "false" } }
+                    %i.bi-person-circle.me-1
+                    = current_user.username
+                  %ul.dropdown-menu.dropdown-menu-end
+                    %li
+                      = button_to "Log out", destroy_user_session_path, method: :delete, class: "dropdown-item"
 
     - if flash.present?
       .container-fluid.flash-messages

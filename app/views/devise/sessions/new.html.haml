@@ -1,15 +1,14 @@
-- content_for :title, 'Log In'
-
-.row.justify-content-center
-  .col-sm-6.col-lg-4
-    .card.card-light
+.auth-wrapper
+  .auth-card.card.shadow-sm
+    .card-body.p-4
+      %h1.h4.fw-bold.text-center.mb-1
+        %i.bi-flag-fill.text-danger
+        Telemetry
+      %p.text-muted.text-center.mb-4 Log in to your account
       = simple_form_for(resource, as: resource_name, url: session_path(resource_name)) do |f|
-        .card-header
-          Log In
-        .card-body
-          = f.input :email, autofocus: true, required: true
-          = f.input :password, required: true
-        .card-footer
-          %button.btn.btn-primary{ type: :submit }
-            Log in
-          .mt-3= render "devise/shared/links"
+        = f.input :username, autofocus: true, input_html: { autocomplete: "username" }
+        = f.input :password, input_html: { autocomplete: "current-password" }
+        = f.button :submit, "Log in", class: "btn btn-primary w-100"
+      %p.text-center.mt-3.mb-0
+        New here?
+        = link_to "Create account", new_registration_path(resource_name)

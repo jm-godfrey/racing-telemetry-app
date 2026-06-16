@@ -48,6 +48,10 @@ RSpec.configure do |config|
   # (e.g. if a process got killed and things weren't cleaned up)
   config.before(:suite) do
     DatabaseCleaner.clean_with(:truncation)
+    # Eagerly load routes so Devise.mappings is populated before configure_warden!
+    # is called. Without this, Rails 8 lazy route loading causes Warden to be
+    # configured without any strategies, breaking form-based login in feature specs.
+    Rails.application.routes.routes
     Devise.configure_warden!
   end
 
