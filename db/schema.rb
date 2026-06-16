@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2026_06_16_025437) do
+ActiveRecord::Schema[8.0].define(version: 2026_06_16_025913) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -52,4 +52,22 @@ ActiveRecord::Schema[8.0].define(version: 2026_06_16_025437) do
     t.index ["session_id"], name: "index_sessions_on_session_id", unique: true
     t.index ["updated_at"], name: "index_sessions_on_updated_at"
   end
+
+  create_table "telemetry_samples", force: :cascade do |t|
+    t.bigint "race_id", null: false
+    t.bigint "lap_id"
+    t.integer "offset_ms", null: false
+    t.integer "sequence", null: false
+    t.float "lat"
+    t.float "lon"
+    t.float "speed"
+    t.float "accel_x"
+    t.float "accel_y"
+    t.float "accel_z"
+    t.index ["lap_id"], name: "index_telemetry_samples_on_lap_id"
+    t.index ["race_id", "sequence"], name: "index_telemetry_samples_on_race_id_and_sequence"
+    t.index ["race_id"], name: "index_telemetry_samples_on_race_id"
+  end
+
+  add_foreign_key "telemetry_samples", "races"
 end
