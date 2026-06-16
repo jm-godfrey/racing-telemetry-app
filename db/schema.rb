@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_08_27_154420) do
+ActiveRecord::Schema[8.0].define(version: 2026_06_16_025437) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -27,6 +27,21 @@ ActiveRecord::Schema[8.0].define(version: 2025_08_27_154420) do
     t.datetime "created_at"
     t.datetime "updated_at"
     t.index ["priority", "run_at"], name: "delayed_jobs_priority"
+  end
+
+  create_table "races", force: :cascade do |t|
+    t.string "name", null: false
+    t.integer "status", default: 0, null: false
+    t.datetime "recorded_at"
+    t.integer "duration_ms"
+    t.float "start_finish_lat_a"
+    t.float "start_finish_lon_a"
+    t.float "start_finish_lat_b"
+    t.float "start_finish_lon_b"
+    t.integer "sample_count", default: 0, null: false
+    t.integer "lap_count", default: 0, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
   end
 
   create_table "sessions", force: :cascade do |t|
