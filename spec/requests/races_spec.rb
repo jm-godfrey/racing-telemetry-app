@@ -50,4 +50,12 @@ RSpec.describe "Races", type: :request do
     expect(response).to have_http_status(:ok)
     expect(response.body).to include("Welcome back")
   end
+
+  it "shows status, laps, best, and uploaded columns on the index" do
+    create(:race, user: user, name: "Cadwell Park")
+    get races_path
+    expect(response.body).to include("Cadwell Park")
+    expect(response.body).to include("Uploaded")
+    expect(response.body).to include("Best")
+  end
 end
