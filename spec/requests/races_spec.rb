@@ -30,6 +30,7 @@ RSpec.describe "Races", type: :request do
     expect(ParseRaceJob).to have_been_enqueued
     expect(response).to redirect_to(race_path(Race.last))
     expect(Race.last.name).to eq("telemetry_sample.csv")
+    expect(Race.last.user).to eq(user)
   end
 
   it "shows a race" do
