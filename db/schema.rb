@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2026_06_16_025913) do
+ActiveRecord::Schema[8.0].define(version: 2026_06_16_030435) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -27,6 +27,20 @@ ActiveRecord::Schema[8.0].define(version: 2026_06_16_025913) do
     t.datetime "created_at"
     t.datetime "updated_at"
     t.index ["priority", "run_at"], name: "delayed_jobs_priority"
+  end
+
+  create_table "laps", force: :cascade do |t|
+    t.bigint "race_id", null: false
+    t.integer "number", null: false
+    t.integer "start_offset_ms", null: false
+    t.integer "end_offset_ms", null: false
+    t.integer "lap_time_ms", null: false
+    t.float "top_speed"
+    t.boolean "best", default: false, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["race_id", "number"], name: "index_laps_on_race_id_and_number", unique: true
+    t.index ["race_id"], name: "index_laps_on_race_id"
   end
 
   create_table "races", force: :cascade do |t|
@@ -69,5 +83,7 @@ ActiveRecord::Schema[8.0].define(version: 2026_06_16_025913) do
     t.index ["race_id"], name: "index_telemetry_samples_on_race_id"
   end
 
+  add_foreign_key "laps", "races"
+  add_foreign_key "telemetry_samples", "laps"
   add_foreign_key "telemetry_samples", "races"
 end
