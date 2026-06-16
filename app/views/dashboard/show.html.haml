@@ -1,0 +1,29 @@
+%h1.h3.fw-bold.mb-4
+  Welcome back, #{current_user.username}
+  %i.bi-flag-fill.text-danger
+
+.row.g-3.mb-4
+  .col-6.col-md-4
+    = render "shared/stat_tile", value: @race_count, label: "Races"
+  .col-6.col-md-4
+    = render "shared/stat_tile", value: @lap_count, label: "Laps"
+  .col-12.col-md-4
+    - best = @best_lap_ms ? Lap.new(lap_time_ms: @best_lap_ms).formatted_time : "—"
+    = render "shared/stat_tile", value: best, label: "Best lap"
+
+.d-flex.justify-content-between.align-items-center.mb-3
+  %h2.h5.fw-bold.mb-0 Recent races
+  = link_to "View all", races_path, class: "btn btn-sm btn-outline-dark"
+
+.row.g-3
+  - @recent_races.each do |race|
+    .col-12.col-sm-6.col-lg-4
+      = render "shared/race_card", race: race
+  .col-12.col-sm-6.col-lg-4
+    = link_to new_race_path, class: "card upload-card h-100 text-decoration-none p-4" do
+      %i.bi-cloud-arrow-up.fs-1
+      %div.fw-bold.mt-2 Upload a new race
+      - if @race_count.zero?
+        .small Upload your first race
+      - else
+        .small Drop a CSV or browse files
