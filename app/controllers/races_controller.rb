@@ -28,6 +28,7 @@ class RacesController < ApplicationController
                          .pluck(:offset_ms, :lat, :lon, :speed, :lap_id)
                          .map { |t, lat, lon, sp, lap| { t:, lat:, lon:, sp:, lap: } }
     @laps = @race.laps.order(:number)
+    @race = @race.decorate
   end
 
   def destroy

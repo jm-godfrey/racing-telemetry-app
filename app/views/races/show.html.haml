@@ -1,14 +1,27 @@
-%h1= @race.name
-%p.text-muted Status: #{@race.status.titleize} · #{@race.sample_count} samples
+= render "shared/page_header",
+    title: @race.name,
+    actions: link_to("Delete", race_path(@race), data: { turbo_method: :delete, turbo_confirm: "Delete this race?" }, class: "btn btn-outline-danger btn-sm")
 
-#track-map{ data: { track_map: true,
-                    race_id: @race.id,
-                    samples: @samples_json.to_json,
-                    start_finish: { lat_a: @race.start_finish_lat_a, lon_a: @race.start_finish_lon_a, lat_b: @race.start_finish_lat_b, lon_b: @race.start_finish_lon_b }.to_json,
-                    update_url: start_finish_race_path(@race) } }
-  %canvas.track-canvas{ width: 900, height: 480 }
-  %button#set-start-finish.btn.btn-outline-primary.mt-2{ type: "button" } Set start/finish line
+.d-flex.flex-wrap.align-items-center.gap-2.mb-4
+  = @race.status_badge
+  %span.text-muted= "#{@race.lap_count} laps"
+  %span.text-muted ·
+  %span.text-muted= "best #{@race.best_lap_display}"
+  %span.text-muted ·
+  %span.text-muted= "#{@race.sample_count} samples"
 
-= render "lap_table", race: @race, laps: @laps
+.row.g-4
+  .col-12.col-lg-8
+    .card.shadow-sm
+      .card-body
+        #track-map{ data: { track_map: true,
+                            race_id: @race.id,
+                            samples: @samples_json.to_json,
+                            start_finish: { lat_a: @race.start_finish_lat_a, lon_a: @race.start_finish_lon_a, lat_b: @race.start_finish_lat_b, lon_b: @race.start_finish_lon_b }.to_json,
+                            update_url: start_finish_race_path(@race) } }
+          %canvas.track-canvas.w-100{ width: 900, height: 480 }
+          %button#set-start-finish.btn.btn-outline-primary.mt-3{ type: "button" } Set start/finish line
+  .col-12.col-lg-4
+    = render "lap_table", race: @race, laps: @laps
 
-= link_to "Back to races", races_path
+= link_to "Back to races", races_path, class: "btn btn-link mt-3"
