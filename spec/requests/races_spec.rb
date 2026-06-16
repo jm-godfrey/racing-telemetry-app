@@ -5,8 +5,11 @@ RSpec.describe "Races", type: :request do
 
   before { ActiveJob::Base.queue_adapter = :test }
 
+  let(:user) { create(:user) }
+  before { sign_in user }
+
   it "lists races on the index" do
-    create(:race, name: "Brands Hatch AM")
+    create(:race, user: user, name: "Brands Hatch AM")
     get races_path
     expect(response).to have_http_status(:ok)
     expect(response.body).to include("Brands Hatch AM")
@@ -30,13 +33,13 @@ RSpec.describe "Races", type: :request do
   end
 
   it "shows a race" do
-    race = create(:race)
+    race = create(:race, user: user)
     get race_path(race)
     expect(response).to have_http_status(:ok)
   end
 
   it "destroys a race" do
-    race = create(:race)
+    race = create(:race, user: user)
     expect { delete race_path(race) }.to change(Race, :count).by(-1)
     expect(response).to redirect_to(races_path)
   end

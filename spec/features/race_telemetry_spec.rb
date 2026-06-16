@@ -8,6 +8,9 @@ RSpec.feature "Race telemetry", js: true do
     ActiveJob::Base.queue_adapter = original
   end
 
+  let(:user) { create(:user) }
+  before { login_as(user, scope: :user) }
+
   scenario "uploading a CSV parses it and draws the map" do
     visit new_race_path
     attach_file "Telemetry CSV", Rails.root.join("spec/factories/files/telemetry_sample.csv")
@@ -19,7 +22,7 @@ RSpec.feature "Race telemetry", js: true do
   end
 
   scenario "clicking a lap row highlights it" do
-    race = create(:race, status: :ready, sample_count: 2)
+    race = create(:race, user: user, status: :ready, sample_count: 2)
     create(:telemetry_sample, race: race, sequence: 0, offset_ms: 0, lat: 53.0, lon: -1.0, speed: 10)
     create(:telemetry_sample, race: race, sequence: 1, offset_ms: 100, lat: 53.001, lon: -1.001, speed: 20)
     lap = create(:lap, race: race, number: 1)
@@ -30,7 +33,7 @@ RSpec.feature "Race telemetry", js: true do
   end
 
   scenario "setting the start/finish line on the map triggers lap detection" do
-    race = create(:race, status: :ready, sample_count: 2)
+    race = create(:race, user: user, status: :ready, sample_count: 2)
     create(:telemetry_sample, race: race, sequence: 0, offset_ms: 0, lat: 53.0, lon: -1.0, speed: 10)
     create(:telemetry_sample, race: race, sequence: 1, offset_ms: 100, lat: 53.002, lon: -1.002, speed: 20)
 

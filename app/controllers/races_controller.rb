@@ -2,16 +2,16 @@ class RacesController < ApplicationController
   before_action :set_race, only: %i[show destroy start_finish]
 
   def index
-    @races = Race.order(created_at: :desc)
+    @races = current_user.races.order(created_at: :desc)
   end
 
   def new
-    @race = Race.new
+    @race = current_user.races.new
   end
 
   def create
     file = params.dig(:race, :csv_file)
-    @race = Race.new(name: file&.original_filename || "Untitled race")
+    @race = current_user.races.new(name: file&.original_filename || "Untitled race")
     @race.csv_file.attach(file) if file
 
     if file && @race.save
@@ -44,7 +44,7 @@ class RacesController < ApplicationController
   private
 
   def set_race
-    @race = Race.find(params[:id])
+    @race = current_user.races.find(params[:id])
   end
 
   def start_finish_params

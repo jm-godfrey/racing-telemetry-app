@@ -15,9 +15,19 @@
 #  status             :integer          default("pending"), not null
 #  created_at         :datetime         not null
 #  updated_at         :datetime         not null
+#  user_id            :bigint           not null
+#
+# Indexes
+#
+#  index_races_on_user_id  (user_id)
+#
+# Foreign Keys
+#
+#  fk_rails_...  (user_id => users.id)
 #
 class Race < ApplicationRecord
   has_one_attached :csv_file
+  belongs_to :user
 
   has_many :telemetry_samples, dependent: :delete_all
   has_many :laps, dependent: :delete_all

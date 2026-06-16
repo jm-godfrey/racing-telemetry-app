@@ -7,6 +7,7 @@ class ApplicationController < ActionController::Base
   # browser cache. If your app does not deal with sensitive information then it
   # may be worth enabling caching for performance.
   before_action :update_headers_to_disable_caching
+  before_action :authenticate_user!
   before_action :configure_permitted_parameters, if: :devise_controller?
 
   private
