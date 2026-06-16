@@ -19,6 +19,9 @@ class ParseRaceJob < ApplicationJob
       }
     end
 
+    # Replace any existing samples so a retry or re-parse is idempotent
+    # rather than appending a duplicate set of rows.
+    race.telemetry_samples.delete_all
     TelemetrySample.insert_all(records)
 
     race.update!(

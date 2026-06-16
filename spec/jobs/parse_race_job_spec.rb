@@ -22,6 +22,15 @@ RSpec.describe ParseRaceJob do
     expect(race.duration_ms).to eq(400)
   end
 
+  it "is idempotent when run more than once" do
+    ParseRaceJob.perform_now(race.id)
+    ParseRaceJob.perform_now(race.id)
+    race.reload
+
+    expect(race.telemetry_samples.count).to eq(5)
+    expect(race.sample_count).to eq(5)
+  end
+
   it "marks the race failed when the CSV is malformed" do
     bad = create(:race)
     bad.csv_file.attach(io: StringIO.new("nope\n1\n"), filename: "bad.csv", content_type: "text/csv")
