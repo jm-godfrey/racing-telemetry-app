@@ -4,9 +4,11 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Overview
 
-A Rails 8 application built from the **epiGenesys** (University of Sheffield Computer Science) group-project template. Most infrastructure (auth, CI, deployment, asset pipeline, error reporting) is pre-wired by the template; the application-specific domain code is currently minimal (root route is `pages#home`).
+A Rails 8 application built from the **epiGenesys** (University of Sheffield Computer Science) group-project template. Most infrastructure (auth, CI, deployment, asset pipeline, error reporting) is pre-wired by the template.
 
 The app displays **race-car telemetry** so a driver can see where to improve their laps. Telemetry arrives as **CSV files** (`public/short_example_telemetry_log.csv` is a sample); each uploaded file is one **race** (session). The app parses the rows into samples, draws the GPS racing line on a speed-coloured map, lets the user click a start/finish line, and **auto-detects + times laps** from where the path crosses it.
+
+The telemetry dashboard described below is **implemented** (root route is `races#index`). The unused template `pages#home` controller/view still exist but are no longer wired to root.
 
 - Ruby 3.4.5 (`.ruby-version`), Node 22 (`.node-version`), Yarn 1.x (Classic)
 - PostgreSQL via Active Record
@@ -20,9 +22,17 @@ Design spec: `docs/superpowers/specs/2026-06-16-telemetry-dashboard-design.md`.
 - **TelemetrySample** — one CSV row: `offset_ms`, `sequence`, `lat`, `lon`, `speed`, `accel_x/y/z`, nullable `lap_id`. **Fixed typed columns** — new CSV columns get a migration each time (no dynamic/JSON store).
 - **Lap** — belongs to a race; `number`, boundaries, `lap_time_ms`, cached `top_speed`; fastest = best.
 
-Key units: `CsvTelemetryParser` (file → rows, no DB), `ParseRaceJob` (parse + bulk-insert samples), `LapDetector` (pure logic: samples + start/finish line → lap boundaries/times via segment-crossing), `DetectLapsJob` (persists laps). Map is drawn client-side on `<canvas>` in `app/packs/scripts/` (abstract plot now, Leaflet basemap later). CSV warm-up rows (all-zero lat/lon/speed before GPS lock) are kept but skipped on the map and in lap detection.
+Key units: `CsvTelemetryParser` (file → rows, no DB), `ParseRaceJob` (parse + bulk-insert samples), `LapDetector` (pure logic: samples + start/finish line → lap boundaries/times via segment-crossing), `DetectLapsJob` (persists laps). Map is drawn client-side on `<canvas>` in `app/packs/scripts/track_map.js` (abstract plot now, Leaflet basemap later). CSV warm-up rows (all-zero lat/lon/speed before GPS lock) are kept but skipped on the map and in lap detection.
 
 Background jobs use Delayed Job (already configured — see below).
+
+### Implementation notes (things that bite)
+
+- **CSV format:** header is `timestamp,lat,lon,speed,accelX,accelY,accelZ`; `CsvTelemetryParser::COLUMN_MAP` maps those names to symbols and validates required headers (raises `InvalidFormat`). `timestamp` is milliseconds; `offset_ms` is stored relative to the **first** row. The parser skips blank/partial rows.
+- **Pipeline trigger:** `RacesController#create` saves the race + attaches the CSV, then `ParseRaceJob.perform_later`. `RacesController#start_finish` (`PATCH /races/:id/start_finish`) saves the four `start_finish_*` coords, then `DetectLapsJob.perform_later`. Re-running either job is idempotent (parse upserts, detect deletes-then-rebuilds laps and re-tags samples).
+- **`LapDetector`** treats `lon` as x and `lat` as y for sign tests, drops the out-/in-lap, ignores `0,0` points, and includes a GPS-jitter debounce so noise near the line doesn't double-count crossings. Crossing times are interpolated along the segment.
+- **Front-end wiring:** `show.html.haml` serializes samples + start/finish coords into `data-*` attributes on a `[data-track-map]` element; `track_map.js` reads them, colours segments red→amber→green by speed, draws the line, supports click-to-place the start/finish line (submitted via a generated `<form>` with a hidden `_method=patch` and the CSRF token), and click-to-highlight a lap row.
+- **Specs:** `spec/features/race_telemetry_spec.rb` is `js: true` (headless Chrome, compiles webpack on first run); the rest are fast model/service/job/request specs. Full suite is 32 examples.
 
 ## Commands
 
