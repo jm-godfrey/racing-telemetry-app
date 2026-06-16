@@ -24,6 +24,7 @@ RSpec.feature "Authentication", js: true do
   scenario "a logged-in user can log out" do
     login_as(create(:user, username: "outgoing"), scope: :user)
     visit root_path
+    find(".navbar .dropdown-toggle").click
     click_button "Log out"
 
     expect(page).to have_content("Log in")
