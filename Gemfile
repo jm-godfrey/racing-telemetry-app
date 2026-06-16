@@ -4,6 +4,9 @@ git_source(:github) { |repo| "https://github.com/#{repo}.git" }
 # Bundle edge Rails instead: gem "rails", github: "rails/rails", branch: "main"
 gem "rails", "~> 8.0.2", ">= 8.0.2.1"
 
+# CSV parsing (no longer a default gem in Ruby 3.4)
+gem "csv"
+
 # Use postgresql as the database for Active Record
 gem "pg", "~> 1.1"
 
