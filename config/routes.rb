@@ -8,5 +8,5 @@ Rails.application.routes.draw do
   end
 
   # Defines the root path route ("/")
-  root "pages#home"
+  root "races#index"
 end

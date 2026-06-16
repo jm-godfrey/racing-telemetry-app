@@ -40,4 +40,10 @@ RSpec.describe "Races", type: :request do
     expect { delete race_path(race) }.to change(Race, :count).by(-1)
     expect(response).to redirect_to(races_path)
   end
+
+  it "uses the races index as the root page" do
+    get root_path
+    expect(response).to have_http_status(:ok)
+    expect(response.body).to include("Races")
+  end
 end
