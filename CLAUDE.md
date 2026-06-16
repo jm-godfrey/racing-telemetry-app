@@ -65,9 +65,13 @@ Capybara feature specs use a **headless Chrome** Selenium driver (`spec/support/
 - `app/packs/entrypoints/application.js` — JS entrypoint; import new scripts here
 - `app/packs/entrypoints/styles.js` — imports SCSS from `app/packs/styles/`
 - `app/packs/scripts/`, `app/packs/styles/`, `app/packs/images/`
-Reference images in views with `image_pack_tag 'images/foo.png'`. See `GETTING_STARTED.md` for adding JS libs, CSS, and images. Bootstrap 5 + bootstrap-icons are bundled.
+Reference images in views with `image_pack_tag 'images/foo.png'`. See `GETTING_STARTED.md` for adding JS libs, CSS, and images. Bootstrap 5 (incl. its JS bundle, for dropdowns/collapse) + bootstrap-icons are bundled.
 
-**Authentication = Devise; authorization = CanCanCan.** Permission rules live in `app/models/ability.rb` (currently empty — all abilities are defined there). `CanCan::AccessDenied` is mapped to a `403` response in `config/application.rb`. Note: Devise routes are **not yet** declared in `config/routes.rb` — add them when introducing authenticated users.
+**JS interaction layer is `@rails/ujs` (Rails UJS), NOT Hotwire/Turbo** (no `@hotwired/turbo` is bundled; `application.js` calls `Rails.start()`). This matters for links that perform non-GET requests:
+- Use `link_to "x", path, method: :delete, data: { confirm: "Sure?" }` → renders `data-method` / `data-confirm`, which UJS handles. Do **NOT** use `data: { turbo_method:, turbo_confirm: }` — those are Turbo attributes and are silently inert here (the link just does a GET, e.g. a "Delete" link that never deletes).
+- `button_to ... method: :delete` works with zero JS (it's a real form) — preferred when you don't want a UJS dependency. CSRF meta tags are present, so UJS DELETE/POST requests are authenticated.
+
+**Authentication = Devise; authorization = CanCanCan.** Multi-user accounts are live: a **username-only** `User` (no email — `config.authentication_keys = [:username]`, and `User#email_required?`/`email_changed?`/`will_save_change_to_email?` return false so `:validatable` ignores the missing email column). `devise_for :users` is declared; `ApplicationController` applies `authenticate_user!` globally; root is `dashboard#show`. Each `Race` `belongs_to :user`, and `RacesController` scopes every action through `current_user.races` (a non-owned record 404s). `app/models/ability.rb` holds `can :manage, Race, user_id: user.id` as defence-in-depth (the controller scoping is the primary gate; no action calls `authorize!` yet). `CanCan::AccessDenied` is mapped to a `403` response in `config/application.rb`. Login required everywhere means request/feature specs must authenticate: `sign_in user` (request specs — `Devise::Test::IntegrationHelpers`) or `login_as(user, scope: :user)` (feature specs — Warden).
 
 **Presentation logic = Draper decorators** in `app/decorators/`.
 
