@@ -1,0 +1,16 @@
+%h2.mt-4 Laps
+- if laps.any?
+  %table.table.lap-table
+    %thead
+      %tr
+        %th Lap
+        %th Time
+        %th Top speed
+    %tbody
+      - laps.each do |lap|
+        %tr{ class: ("table-success" if lap.best), data: { lap_id: lap.id } }
+          %td= lap.number
+          %td= lap.formatted_time
+          %td= lap.top_speed&.round(1)
+- else
+  %p.text-muted No laps yet. Set the start/finish line on the map to detect laps.

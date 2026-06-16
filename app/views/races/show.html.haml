@@ -1,0 +1,14 @@
+%h1= @race.name
+%p.text-muted Status: #{@race.status.titleize} · #{@race.sample_count} samples
+
+#track-map{ data: { track_map: true,
+                    race_id: @race.id,
+                    samples: @samples_json.to_json,
+                    start_finish: { lat_a: @race.start_finish_lat_a, lon_a: @race.start_finish_lon_a, lat_b: @race.start_finish_lat_b, lon_b: @race.start_finish_lon_b }.to_json,
+                    update_url: start_finish_race_path(@race) } }
+  %canvas.track-canvas{ width: 900, height: 480 }
+  %button#set-start-finish.btn.btn-outline-primary.mt-2{ type: "button" } Set start/finish line
+
+= render "lap_table", race: @race, laps: @laps
+
+= link_to "Back to races", races_path

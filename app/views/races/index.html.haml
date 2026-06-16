@@ -1,0 +1,21 @@
+.d-flex.justify-content-between.align-items-center.mb-3
+  %h1 Races
+  = link_to "Upload race", new_race_path, class: "btn btn-primary"
+
+- if @races.any?
+  %table.table
+    %thead
+      %tr
+        %th Name
+        %th Status
+        %th Laps
+        %th
+    %tbody
+      - @races.each do |race|
+        %tr
+          %td= link_to race.name, race
+          %td= race.status.titleize
+          %td= race.lap_count
+          %td= link_to "Delete", race, data: { turbo_method: :delete, turbo_confirm: "Delete this race?" }, class: "text-danger"
+- else
+  %p.text-muted No races yet. Upload a CSV to get started.
