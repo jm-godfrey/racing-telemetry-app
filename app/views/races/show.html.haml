@@ -1,6 +1,6 @@
 = render "shared/page_header",
     title: @race.name,
-    actions: link_to("Delete", race_path(@race), data: { turbo_method: :delete, turbo_confirm: "Delete this race?" }, class: "btn btn-outline-danger btn-sm")
+    actions: link_to("Delete", race_path(@race), method: :delete, data: { confirm: "Delete this race?" }, class: "btn btn-outline-danger btn-sm")
 
 .d-flex.flex-wrap.align-items-center.gap-2.mb-4
   = @race.status_badge

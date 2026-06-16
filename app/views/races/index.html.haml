@@ -22,7 +22,7 @@
               %td= race.best_lap_display
               %td.text-muted= race.uploaded_ago
               %td.text-end
-                = link_to race_path(race), data: { turbo_method: :delete, turbo_confirm: "Delete this race?" }, class: "text-danger", aria: { label: "Delete" } do
+                = link_to race_path(race), method: :delete, data: { confirm: "Delete this race?" }, class: "text-danger", aria: { label: "Delete" } do
                   %i.bi-trash
 - else
   .text-center.text-muted.py-5
