@@ -23,8 +23,9 @@
   %body
     %header.navbar.navbar-expand-lg.bg-light.mb-3
       .container-fluid
-        = link_to '#', class: 'navbar-brand' do
-          = image_pack_tag 'images/logo.png', height: 40
+        = link_to '/', class: 'navbar-brand fw-bold' do
+          %i.bi-flag-fill.text-danger
+          Telemetry
         %button.navbar-toggler{ type: :button, data: { bs_toggle: :collapse, bs_target: '#navbar-content' }, aria: { controls: 'navbar-content', expanded: 'false', label: 'Toggle navigation' } }
           %span.navbar-toggler-icon
         #navbar-content.navbar-collapse.collapse
