@@ -95,3 +95,7 @@ CI is **GitLab CI** (`.gitlab-ci.yml`), not GitHub Actions: stages are `setup` (
 ## Testing stack
 
 RSpec + Capybara + Selenium, FactoryBot (`spec/factories/`, `create`/`build` available unprefixed), DatabaseCleaner (transactions for normal specs, truncation for `js: true`), and SimpleCov (started in `spec/rails_helper.rb`). Helpers mixed in globally: `login_as` (Warden), Capybara DSL, route helpers, and Devise controller helpers. Test file fixtures resolve from `spec/factories/files`. Tag a spec `screenshot_on_failure: true` to auto-open a screenshot on failure, or `error_page: true` to exercise real production error pages.
+
+## Git workflow
+
+Do **not** run `git add`/`git commit` on this repo unless the user explicitly asks for it in that message — even if a task's written plan/instructions include a "commit" step. The user prefers to review the diff and commit manually. Finish the code/test changes and leave the working tree unstaged; report what changed and let the user stage/commit it themselves.

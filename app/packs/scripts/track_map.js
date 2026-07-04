@@ -1,5 +1,5 @@
 // Draws a telemetry racing line on a <canvas>, coloured by speed, supports
-// click-to-set the start/finish line, and highlights a selected lap.
+// click-to-set the start/finish line, and isolates a single selected lap.
 function speedColor(speed, min, max) {
   const ratio = max > min ? (speed - min) / (max - min) : 0;
   const hue = ratio * 120; // 0=red (slow) -> 120=green (fast)
@@ -16,11 +16,13 @@ class TrackMap {
     this.startFinish = JSON.parse(root.dataset.startFinish || "{}");
     this.updateUrl = root.dataset.updateUrl;
     this.placing = [];
-    this.highlightLap = null;
+    // lap_id currently isolated on the canvas, or null for the full session.
+    this.selectedLap = null;
+    this.caption = document.getElementById("lap-caption");
     this.computeBounds();
-    this.draw();
     this.bindPlacement();
-    this.bindLapHighlight();
+    this.bindLapSelection();
+    this.selectDefaultLap(); // auto-select the best lap, then caption + draw
   }
 
   computeBounds() {
@@ -64,6 +66,8 @@ class TrackMap {
     ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
     if (this.samples.length < 2) return;
 
+    // Speed colour uses the whole-session min/max so a colour means the same
+    // speed on every lap, even when only one lap is drawn.
     const speeds = this.samples.map((s) => s.sp);
     const min = Math.min(...speeds), max = Math.max(...speeds);
 
@@ -71,10 +75,12 @@ class TrackMap {
     ctx.lineCap = "round";
     for (let i = 1; i < this.samples.length; i++) {
       const a = this.samples[i - 1], b = this.samples[i];
+      // When a lap is selected, draw only that lap's segments; samples with no
+      // lap (warm-up, out/in-lap) are skipped. null selection draws everything.
+      if (this.selectedLap !== null && b.lap !== this.selectedLap) continue;
       const [x1, y1] = this.project(a.lat, a.lon);
       const [x2, y2] = this.project(b.lat, b.lon);
-      const dimmed = this.highlightLap && b.lap !== this.highlightLap;
-      ctx.strokeStyle = dimmed ? "rgba(120,120,120,0.25)" : speedColor(b.sp, min, max);
+      ctx.strokeStyle = speedColor(b.sp, min, max);
       ctx.beginPath();
       ctx.moveTo(x1, y1);
       ctx.lineTo(x2, y2);
@@ -142,17 +148,57 @@ class TrackMap {
     form.submit();
   }
 
-  bindLapHighlight() {
-    document.querySelectorAll(".lap-table tbody tr[data-lap-id]").forEach((row) => {
+  bindLapSelection() {
+    this.rows = Array.from(
+      document.querySelectorAll(".lap-table tbody tr[data-lap-id]")
+    );
+    this.rows.forEach((row) => {
       row.style.cursor = "pointer";
       row.addEventListener("click", () => {
         const id = parseInt(row.dataset.lapId, 10);
-        this.highlightLap = this.highlightLap === id ? null : id;
-        document.querySelectorAll(".lap-table tbody tr").forEach((r) => r.classList.remove("table-active"));
-        if (this.highlightLap) row.classList.add("table-active");
-        this.draw();
+        // Clicking the active lap again clears the selection (full session).
+        this.setSelectedLap(this.selectedLap === id ? null : id);
       });
     });
+  }
+
+  selectDefaultLap() {
+    const best = document.querySelector(
+      ".lap-table tbody tr.table-success[data-lap-id]"
+    );
+    this.setSelectedLap(best ? parseInt(best.dataset.lapId, 10) : null);
+  }
+
+  setSelectedLap(id) {
+    this.selectedLap = id;
+    this.root.dataset.selectedLap = id === null ? "" : String(id);
+    this.rows.forEach((r) =>
+      r.classList.toggle(
+        "table-active",
+        id !== null && parseInt(r.dataset.lapId, 10) === id
+      )
+    );
+    this.updateCaption();
+    this.draw();
+  }
+
+  updateCaption() {
+    if (!this.caption) return;
+    if (this.selectedLap === null) {
+      this.caption.textContent = "All laps";
+      return;
+    }
+    const row = this.rows.find(
+      (r) => parseInt(r.dataset.lapId, 10) === this.selectedLap
+    );
+    if (!row) {
+      this.caption.textContent = "All laps";
+      return;
+    }
+    const cells = row.querySelectorAll("td");
+    const number = cells[0] ? cells[0].textContent.trim() : "";
+    const time = cells[1] ? cells[1].textContent.trim() : "";
+    this.caption.textContent = `Lap ${number} · ${time}`;
   }
 }
 

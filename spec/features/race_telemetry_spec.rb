@@ -32,6 +32,40 @@ RSpec.feature "Race telemetry", js: true do
     expect(page).to have_css("tr[data-lap-id='#{lap.id}'].table-active")
   end
 
+  scenario "auto-selects the fastest lap on load" do
+    race = create(:race, user: user, status: :ready, sample_count: 2)
+    create(:telemetry_sample, race: race, sequence: 0, offset_ms: 0, lat: 53.0, lon: -1.0, speed: 10)
+    create(:telemetry_sample, race: race, sequence: 1, offset_ms: 100, lat: 53.001, lon: -1.001, speed: 20)
+    slow = create(:lap, race: race, number: 1, best: false)
+    fast = create(:lap, race: race, number: 2, best: true, lap_time_ms: 80_000)
+
+    visit race_path(race)
+
+    expect(page).to have_css("tr[data-lap-id='#{fast.id}'].table-active")
+    expect(page).to have_no_css("tr[data-lap-id='#{slow.id}'].table-active")
+    expect(page).to have_css("#lap-caption", text: "Lap 2")
+    expect(page).to have_css("#track-map[data-selected-lap='#{fast.id}']")
+  end
+
+  scenario "clicking a lap isolates it and re-clicking returns to all laps" do
+    race = create(:race, user: user, status: :ready, sample_count: 2)
+    create(:telemetry_sample, race: race, sequence: 0, offset_ms: 0, lat: 53.0, lon: -1.0, speed: 10)
+    create(:telemetry_sample, race: race, sequence: 1, offset_ms: 100, lat: 53.001, lon: -1.001, speed: 20)
+    lap1 = create(:lap, race: race, number: 1, best: true)
+    lap2 = create(:lap, race: race, number: 2, best: false)
+
+    visit race_path(race)
+    expect(page).to have_css("#lap-caption", text: "Lap 1")
+
+    find("tr[data-lap-id='#{lap2.id}']").click
+    expect(page).to have_css("tr[data-lap-id='#{lap2.id}'].table-active")
+    expect(page).to have_css("#lap-caption", text: "Lap 2")
+
+    find("tr[data-lap-id='#{lap2.id}']").click
+    expect(page).to have_no_css("tr.table-active")
+    expect(page).to have_css("#lap-caption", text: "All laps")
+  end
+
   scenario "setting the start/finish line on the map triggers lap detection" do
     race = create(:race, user: user, status: :ready, sample_count: 2)
     create(:telemetry_sample, race: race, sequence: 0, offset_ms: 0, lat: 53.0, lon: -1.0, speed: 10)

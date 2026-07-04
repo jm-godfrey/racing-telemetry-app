@@ -20,7 +20,9 @@
                             start_finish: { lat_a: @race.start_finish_lat_a, lon_a: @race.start_finish_lon_a, lat_b: @race.start_finish_lat_b, lon_b: @race.start_finish_lon_b }.to_json,
                             update_url: start_finish_race_path(@race) } }
           %canvas.track-canvas.w-100{ width: 900, height: 480 }
-          %button#set-start-finish.btn.btn-outline-primary.mt-3{ type: "button" } Set start/finish line
+          .d-flex.align-items-center.justify-content-between.mt-3
+            %span#lap-caption.fw-semibold.text-body-secondary
+            %button#set-start-finish.btn.btn-outline-primary{ type: "button" } Set start/finish line
   .col-12.col-lg-4
     = render "lap_table", race: @race, laps: @laps
 
