@@ -29,23 +29,33 @@ class TrackMap {
     this.minLat = Math.min(...lats); this.maxLat = Math.max(...lats);
     this.minLon = Math.min(...lons); this.maxLon = Math.max(...lons);
     this.pad = 30;
+
+    // Project lat/lon onto a locally-planar metric so the track keeps its true
+    // shape. A degree of latitude is a ~constant ground distance, but a degree
+    // of longitude shrinks by cos(latitude) as meridians converge, so scale lon
+    // by that factor before fitting. Then use a SINGLE uniform scale for both
+    // axes (aspect-preserving) and letterbox the track in the leftover space,
+    // rather than stretching each axis independently to fill the canvas.
+    const midLat = (this.minLat + this.maxLat) / 2;
+    this.lonScale = Math.cos((midLat * Math.PI) / 180); // lon degrees -> lat-equivalent degrees
+    const w = this.canvas.width - this.pad * 2;
+    const h = this.canvas.height - this.pad * 2;
+    const lonSpan = ((this.maxLon - this.minLon) * this.lonScale) || 1;
+    const latSpan = (this.maxLat - this.minLat) || 1;
+    this.scale = Math.min(w / lonSpan, h / latSpan); // px per lat-equivalent degree
+    this.offsetX = this.pad + (w - lonSpan * this.scale) / 2;
+    this.offsetY = this.pad + (h - latSpan * this.scale) / 2;
   }
 
   project(lat, lon) {
-    const w = this.canvas.width - this.pad * 2;
-    const h = this.canvas.height - this.pad * 2;
-    const lonSpan = (this.maxLon - this.minLon) || 1;
-    const latSpan = (this.maxLat - this.minLat) || 1;
-    const x = this.pad + ((lon - this.minLon) / lonSpan) * w;
-    const y = this.pad + (1 - (lat - this.minLat) / latSpan) * h;
+    const x = this.offsetX + (lon - this.minLon) * this.lonScale * this.scale;
+    const y = this.offsetY + (this.maxLat - lat) * this.scale; // canvas y grows downward
     return [x, y];
   }
 
   unproject(x, y) {
-    const w = this.canvas.width - this.pad * 2;
-    const h = this.canvas.height - this.pad * 2;
-    const lon = this.minLon + ((x - this.pad) / w) * (this.maxLon - this.minLon);
-    const lat = this.minLat + (1 - (y - this.pad) / h) * (this.maxLat - this.minLat);
+    const lon = this.minLon + (x - this.offsetX) / (this.lonScale * this.scale);
+    const lat = this.maxLat - (y - this.offsetY) / this.scale;
     return [lat, lon];
   }
 

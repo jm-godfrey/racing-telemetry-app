@@ -25,9 +25,7 @@ class CsvTelemetryParser
     parsed = table.read
     validate_headers!(parsed.headers)
 
-    # Loggers often end a file with a blank line or a partial row (e.g. a bare
-    # timestamp with no readings). Skip any row missing a required value rather
-    # than emitting a phantom all-zero sample (nil.to_f would become 0.0).
+    # Filter out rows that are missing any required columns, and convert the values to the appropriate types.
     parsed.filter_map do |row|
       next if COLUMN_MAP.keys.any? { |header| row[header].to_s.strip.empty? }
 

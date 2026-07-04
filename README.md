@@ -6,11 +6,6 @@ one race session); the app parses it into samples, draws the GPS racing line on 
 speed-coloured map, lets you click a start/finish line, and **auto-detects and times
 your laps** from where the path crosses that line.
 
-Built on the [epiGenesys](https://www.sheffield.ac.uk/dcs/research/groups/epigenesys)
-(University of Sheffield Computer Science) group-project template, so most
-infrastructure (asset pipeline, CI, deployment, error reporting, auth scaffolding) is
-pre-wired.
-
 ## How it works
 
 1. **Upload** a telemetry CSV on `/races/new`. Each upload becomes a `Race`.
@@ -38,9 +33,6 @@ pre-wired.
 Key units: `CsvTelemetryParser` (file → row hashes, no DB), `LapDetector` (pure
 segment-crossing math), and the `ParseRaceJob` / `DetectLapsJob` background jobs. The map
 is plain JS on a `<canvas>` (`app/packs/scripts/track_map.js`).
-
-The full design spec lives in
-`docs/superpowers/specs/2026-06-16-telemetry-dashboard-design.md`.
 
 ## Requirements
 
@@ -70,7 +62,7 @@ Databases are named `racing_telemetry_app_<env>` (see `config/database.yml`).
 
 ### CSV format
 
-The parser expects this header (extra columns are ignored):
+The parser expects this header (extra columns are ignored for now):
 
 ```csv
 timestamp,lat,lon,speed,accelX,accelY,accelZ
