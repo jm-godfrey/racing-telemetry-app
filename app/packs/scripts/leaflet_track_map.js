@@ -1,7 +1,7 @@
 // Leaflet-based track map. Draws the racing line speed-coloured, isolates a
 // selected lap, supports pan/zoom, an optional Esri satellite basemap
-// (off by default -> fully offline), and click-to-place the start/finish
-// line. Supersedes scripts/track_map.js (kept unwired as a fallback).
+// (off by default to support offline), and click-to-place the start/finish
+// line. Replaces scripts/track_map.js
 import L from "leaflet";
 
 const ESRI_IMAGERY_URL =
@@ -21,14 +21,13 @@ class LeafletTrackMap {
     this.root = root;
     this.container = root.querySelector(".track-map-leaflet");
     this.samples = JSON.parse(root.dataset.samples || "[]")
-      .filter((s) => !(s.lat === 0 && s.lon === 0)); // GPS warm-up noise
+      .filter((s) => !(s.lat === 0 && s.lon === 0)); 
     this.startFinish = JSON.parse(root.dataset.startFinish || "{}");
     this.updateUrl = root.dataset.updateUrl;
-    this.placing = null; // null = not placing; array of latlngs while placing
-    // lap_id currently isolated on the map, or null for the full session.
+    this.placing = null;
     this.selectedLap = null;
     this.caption = document.getElementById("lap-caption");
-    this.root.dataset.basemap = "off"; // satellite tiles never load by default
+    this.root.dataset.basemap = "off";
     if (!this.container || this.samples.length < 2) return;
 
     this.initMap();
@@ -37,7 +36,7 @@ class LeafletTrackMap {
     this.bindBasemapToggle();
     this.bindPlacement();
     this.bindLapSelection();
-    this.selectDefaultLap(); // auto-select best lap, set caption, draw
+    this.selectDefaultLap();
   }
 
   initMap() {
@@ -48,8 +47,7 @@ class LeafletTrackMap {
     this.lineGroup = L.layerGroup().addTo(this.map);
     this.trackBounds = L.latLngBounds(this.samples.map((s) => [s.lat, s.lon]));
     this.resetView();
-    // Built but NOT added -- the Satellite toggle adds/removes it, so the
-    // page makes no tile requests until the user opts in.
+    // Builds tile requests but doesnt add - the Satellite toggle adds/removes it
     this.tiles = L.tileLayer(ESRI_IMAGERY_URL, {
       attribution: ESRI_ATTRIBUTION,
       maxZoom: 19,
@@ -72,7 +70,7 @@ class LeafletTrackMap {
         btn.href = "#";
         btn.title = "Reset view";
         btn.setAttribute("role", "button");
-        btn.innerHTML = "&#8962;"; // house glyph
+        btn.innerHTML = "&#8962;";
         L.DomEvent.on(btn, "click", (e) => {
           L.DomEvent.preventDefault(e);
           self.resetView();
@@ -84,8 +82,7 @@ class LeafletTrackMap {
   }
 
   buildSegments() {
-    // Speed colour uses the whole-session min/max so a colour means the same
-    // speed on every lap, even when only one lap is drawn.
+    // Speed colour uses the whole-session min/max so a colour means the same speed on every lap
     const speeds = this.samples.map((s) => s.sp);
     const min = Math.min(...speeds);
     const max = Math.max(...speeds);
@@ -107,9 +104,7 @@ class LeafletTrackMap {
   }
 
   buildStartFinish() {
-    // Dashed white line over a wider dark casing so it reads on both the
-    // dark abstract background and bright satellite imagery. Built once;
-    // redraw() re-adds them last so they always sit on top of the line.
+    // dashed white line over solid black line for visibility on any basemap
     this.startFinishLines = [];
     const sf = this.startFinish;
     if (sf.lat_a == null || sf.lat_b == null) return;
@@ -121,9 +116,7 @@ class LeafletTrackMap {
     );
   }
 
-  // Rebuild the layer group for the current selection. null = full session;
-  // segments with no lap id (warm-up, out/in-lap) are hidden while a lap is
-  // selected because their lap (null) never equals a selected id.
+  // Rebuilds the lineGroup to show only the selected lap (or all laps if none selected)
   redraw() {
     this.lineGroup.clearLayers();
     this.segments
@@ -157,12 +150,10 @@ class LeafletTrackMap {
       this.container.style.cursor = "crosshair";
     });
 
-    // Leaflet's click event already excludes drag-ends, so panning while in
-    // placement mode does not place a point.
+    // Leaflet's click event already excludes drag-ends, so panning while in placement mode does not place a point.
     this.map.on("click", (e) => {
       if (this.placing === null || this.placing.length >= 2) return;
-      // A double-click fires two identical clicks; ignore the duplicate so a
-      // zero-length line can't be submitted.
+      // This ensures that an accidental double click is ignored
       if (this.placing.length === 1 && e.latlng.equals(this.placing[0])) return;
       this.placing.push(e.latlng);
       if (this.placing.length === 2) this.submitLine();
@@ -170,7 +161,7 @@ class LeafletTrackMap {
   }
 
   submitLine() {
-    const [p1, p2] = this.placing; // Leaflet latlngs: .lat / .lng (not .lon)
+    const [p1, p2] = this.placing;
     const form = document.createElement("form");
     form.method = "post";
     form.action = this.updateUrl;
@@ -201,7 +192,7 @@ class LeafletTrackMap {
       row.style.cursor = "pointer";
       row.addEventListener("click", () => {
         const id = parseInt(row.dataset.lapId, 10);
-        // Clicking the active lap again clears the selection (full session).
+        // clicking the active lap again resets to full race.
         this.setSelectedLap(this.selectedLap === id ? null : id);
       });
     });
@@ -224,8 +215,7 @@ class LeafletTrackMap {
       )
     );
     this.updateCaption();
-    // Deliberately no re-fit: switching laps keeps the user's pan/zoom so
-    // the same corner can be compared across laps.
+    // switching laps keeps the user's pan/zoom to help comparison
     this.redraw();
   }
 

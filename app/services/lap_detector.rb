@@ -1,9 +1,7 @@
 class LapDetector
   Point = Struct.new(:x, :y, :t)
 
-  # min_lap_ms debounces GPS jitter near the line: a crossing that follows the
-  # previous one by less than this is treated as noise and ignored. 0 disables
-  # the debounce, leaving pure geometric detection.
+  # min_lap_ms is the minimum time between two crossings to be considered a valid lap. Used to filter out false positives
   def initialize(samples, lat_a:, lon_a:, lat_b:, lon_b:, min_lap_ms: 0)
     @points = samples
       .reject { |s| s[:lat].to_f.zero? && s[:lon].to_f.zero? }
@@ -41,9 +39,7 @@ class LapDetector
     times
   end
 
-  # Proper segment intersection via orientation tests. A sample lying exactly on
-  # the line (a direction of 0) is treated as a non-crossing; at real GPS
-  # resolution that is vanishingly unlikely and not worth collinear handling.
+  # Proper segment intersection via orientation tests.
   def segments_intersect?(p1, p2, p3, p4)
     d1 = direction(p3, p4, p1)
     d2 = direction(p3, p4, p2)
@@ -53,9 +49,7 @@ class LapDetector
       ((d3 > 0 && d4 < 0) || (d3 < 0 && d4 > 0))
   end
 
-  # lon is used as x and lat as y with no cos(lat) scaling. The crossing sign
-  # tests are invariant under positive scaling of an axis, so this does not
-  # affect lap detection over the small area of a single circuit.
+  # lon is used as x and lat as y with no cos(lat) = k scaling as results are invarient for this small a distance.
   def direction(a, b, c)
     (c.x - a.x) * (b.y - a.y) - (b.x - a.x) * (c.y - a.y)
   end
