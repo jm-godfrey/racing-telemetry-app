@@ -12,13 +12,17 @@ your laps** from where the path crosses that line.
 2. A background job (`ParseRaceJob`) parses the rows into `TelemetrySample` records and
    records session stats (duration, sample count). Warm-up rows (all-zero lat/lon before
    the GPS locks) are kept but skipped on the map and in lap detection.
-3. The race page renders the racing line on a `<canvas>`, coloured red→amber→green by
-   speed, with the start/finish line drawn once it's set.
+3. The race page renders the racing line on an interactive **Leaflet** map (pan, zoom,
+   reset view), coloured red→amber→green by speed, with the start/finish line drawn once
+   it's set. By default the line sits on a plain dark background (fully offline); a
+   **Satellite** toggle overlays Esri aerial imagery underneath so you can see the real
+   road and surroundings.
 4. **Click two points** on the map to place the start/finish line. This triggers
    `DetectLapsJob`, which runs the pure-logic `LapDetector` (segment-crossing with
    time interpolation) to build timed `Lap` records.
-5. The **lap table** lists each lap with its time and top speed, flags the fastest, and
-   highlights a lap's portion of the path when you click its row.
+5. The **lap table** lists each lap with its time and top speed and flags the fastest.
+   The fastest lap is isolated on the map on load; clicking a row isolates that lap, and
+   clicking it again shows the full session.
 
 ### Domain model
 
@@ -32,7 +36,9 @@ your laps** from where the path crosses that line.
 
 Key units: `CsvTelemetryParser` (file → row hashes, no DB), `LapDetector` (pure
 segment-crossing math), and the `ParseRaceJob` / `DetectLapsJob` background jobs. The map
-is plain JS on a `<canvas>` (`app/packs/scripts/track_map.js`).
+is plain JS on **Leaflet** (`app/packs/scripts/leaflet_track_map.js`); satellite tiles
+only load when toggled on, so the map works with no network. The old `<canvas>` renderer
+(`track_map.js`) is kept unwired as a reference.
 
 ## Requirements
 
@@ -95,7 +101,7 @@ yarn run improved-yarn-audit                # JS dependency audit
 
 Rails 8 · PostgreSQL · Active Record · Active Storage (CSV files) · Delayed Job
 (background jobs) · Hamlit (Haml views) · simple_form + Bootstrap 5 · Shakapacker
-(webpack) · RSpec + Capybara + Selenium.
+(webpack) · Leaflet (track map) · RSpec + Capybara + Selenium.
 
 See `GETTING_STARTED.md` for template-specific setup (Sentry DSN, deploy targets, email),
 and `CLAUDE.md` for architecture conventions and gotchas.

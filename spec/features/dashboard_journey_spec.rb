@@ -17,7 +17,7 @@ RSpec.feature "Dashboard journey", js: true do
     attach_file "Telemetry CSV", Rails.root.join("spec/factories/files/telemetry_sample.csv")
     click_button "Upload"
 
-    expect(page).to have_css("canvas.track-canvas")
+    expect(page).to have_css("#track-map .leaflet-container")
     expect(page).to have_content("Ready")
 
     visit races_path

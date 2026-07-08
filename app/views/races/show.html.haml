@@ -19,10 +19,12 @@
                             samples: @samples_json.to_json,
                             start_finish: { lat_a: @race.start_finish_lat_a, lon_a: @race.start_finish_lon_a, lat_b: @race.start_finish_lat_b, lon_b: @race.start_finish_lon_b }.to_json,
                             update_url: start_finish_race_path(@race) } }
-          %canvas.track-canvas.w-100{ width: 900, height: 480 }
+          .track-map-leaflet.w-100
           .d-flex.align-items-center.justify-content-between.mt-3
             %span#lap-caption.fw-semibold.text-body-secondary
-            %button#set-start-finish.btn.btn-outline-primary{ type: "button" } Set start/finish line
+            %div
+              %button#toggle-basemap.btn.btn-outline-secondary.me-2{ type: "button", "aria-pressed": "false" } Satellite
+              %button#set-start-finish.btn.btn-outline-primary{ type: "button" } Set start/finish line
   .col-12.col-lg-4
     = render "lap_table", race: @race, laps: @laps
 

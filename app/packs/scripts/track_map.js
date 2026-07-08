@@ -1,3 +1,7 @@
+// SUPERSEDED (2026-07-08) by leaflet_track_map.js and no longer imported by
+// any entrypoint. Kept as a reference/fallback for the pre-Leaflet canvas
+// renderer. It does NOT receive new features (satellite toggle, pan/zoom,
+// and later the scrubber exist only in the Leaflet version).
 // Draws a telemetry racing line on a <canvas>, coloured by speed, supports
 // click-to-set the start/finish line, and isolates a single selected lap.
 function speedColor(speed, min, max) {

@@ -16,7 +16,7 @@ RSpec.feature "Race telemetry", js: true do
     attach_file "Telemetry CSV", Rails.root.join("spec/factories/files/telemetry_sample.csv")
     click_button "Upload"
 
-    expect(page).to have_css("canvas.track-canvas")
+    expect(page).to have_css("#track-map .leaflet-container")
     expect(page).to have_content("Ready")
     expect(page).to have_content("No laps yet")
   end
@@ -66,6 +66,24 @@ RSpec.feature "Race telemetry", js: true do
     expect(page).to have_css("#lap-caption", text: "All laps")
   end
 
+  scenario "satellite basemap toggles on and off, defaulting to off" do
+    race = create(:race, user: user, status: :ready, sample_count: 2)
+    create(:telemetry_sample, race: race, sequence: 0, offset_ms: 0, lat: 53.0, lon: -1.0, speed: 10)
+    create(:telemetry_sample, race: race, sequence: 1, offset_ms: 100, lat: 53.001, lon: -1.001, speed: 20)
+
+    visit race_path(race)
+
+    expect(page).to have_css("#track-map[data-basemap='off']")
+
+    click_button "Satellite"
+    expect(page).to have_css("#track-map[data-basemap='on']")
+    expect(page).to have_css("button#toggle-basemap.active[aria-pressed='true']")
+
+    click_button "Satellite"
+    expect(page).to have_css("#track-map[data-basemap='off']")
+    expect(page).to have_css("button#toggle-basemap[aria-pressed='false']:not(.active)")
+  end
+
   scenario "setting the start/finish line on the map triggers lap detection" do
     race = create(:race, user: user, status: :ready, sample_count: 2)
     create(:telemetry_sample, race: race, sequence: 0, offset_ms: 0, lat: 53.0, lon: -1.0, speed: 10)
@@ -73,9 +91,10 @@ RSpec.feature "Race telemetry", js: true do
 
     visit race_path(race)
     click_button "Set start/finish line"
-    canvas = find("canvas.track-canvas")
-    canvas.click(x: -150, y: 0)
-    canvas.click(x: 150, y: 0)
+    expect(page).to have_button("Click two points for the line…")
+    map = find("#track-map .leaflet-container")
+    map.click(x: -150, y: 0)
+    map.click(x: 150, y: 0)
 
     expect(page).to have_content("Detecting laps")
     expect(race.reload.start_finish_set?).to be(true)

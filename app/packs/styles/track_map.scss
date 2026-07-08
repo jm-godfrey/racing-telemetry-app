@@ -1,0 +1,9 @@
+// Leaflet track map. The container MUST have a height before L.map() runs.
+.track-map-leaflet {
+  height: 480px;
+}
+
+// Abstract (tiles-off) mode: dark neutral background behind the racing line.
+#track-map[data-basemap="off"] .leaflet-container {
+  background: #212529;
+}
