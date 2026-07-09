@@ -1,5 +1,5 @@
 class RacesController < ApplicationController
-  before_action :set_race, only: %i[show destroy start_finish]
+  before_action :set_race, only: %i[show update destroy start_finish]
 
   def index
     @races = current_user.races.order(created_at: :desc)
@@ -31,6 +31,14 @@ class RacesController < ApplicationController
     @race = @race.decorate
   end
 
+  def update
+    if @race.update(race_params)
+      redirect_to @race, notice: "Race renamed."
+    else
+      redirect_to @race, alert: @race.errors.full_messages.to_sentence
+    end
+  end
+
   def destroy
     @race.destroy
     redirect_to races_path, notice: "Race deleted."
@@ -46,6 +54,10 @@ class RacesController < ApplicationController
 
   def set_race
     @race = current_user.races.find(params[:id])
+  end
+
+  def race_params
+    params.require(:race).permit(:name)
   end
 
   def start_finish_params

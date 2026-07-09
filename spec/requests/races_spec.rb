@@ -39,6 +39,20 @@ RSpec.describe "Races", type: :request do
     expect(response).to have_http_status(:ok)
   end
 
+  it "renames a race" do
+    race = create(:race, user: user, name: "Old Name")
+    patch race_path(race), params: { race: { name: "New Name" } }
+    expect(response).to redirect_to(race_path(race))
+    expect(race.reload.name).to eq("New Name")
+  end
+
+  it "rejects a blank rename and keeps the old name" do
+    race = create(:race, user: user, name: "Old Name")
+    patch race_path(race), params: { race: { name: "" } }
+    expect(response).to redirect_to(race_path(race))
+    expect(race.reload.name).to eq("Old Name")
+  end
+
   it "destroys a race" do
     race = create(:race, user: user)
     expect { delete race_path(race) }.to change(Race, :count).by(-1)

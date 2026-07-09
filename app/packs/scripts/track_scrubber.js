@@ -1,14 +1,10 @@
-// Timeline scrubber + car dot for the Leaflet track map. Owns the current
-// "playback time" as the single source of truth: the slider drives it, and
-// (from Task 4) a requestAnimationFrame loop drives it during play. The map
-// class knows nothing about time — it just hands us map/samples/selectedLap
-// and calls handleSelectionChange() when the isolated lap changes.
+// Timeline scrubber + car dot for the Leaflet track map
 import L from "leaflet";
 
 // White ring + dark fill circle in the marker pane, which stacks above the
 // overlay pane holding the racing-line canvas, so the dot is always on top.
 const DOT_OPTIONS = {
-  radius: 8,
+  radius: 6,
   color: "#ffffff",
   weight: 2,
   fillColor: "#111111",
@@ -17,34 +13,23 @@ const DOT_OPTIONS = {
   pane: "markerPane",
 };
 
-// Reproduce the server's Lap#formatted_time ("%d:%06.3f") in JS: M:SS.mmm.
-function formatTime(ms) {
-  const totalMs = Math.round(ms);
-  const minutes = Math.floor(totalMs / 60000);
-  const seconds = (totalMs % 60000) / 1000;
-  return `${minutes}:${seconds.toFixed(3).padStart(6, "0")}`;
-}
-
 class TrackScrubber {
   constructor(trackMap) {
     this.trackMap = trackMap;
     this.map = trackMap.map;
     this.root = trackMap.root;
-    this.samples = trackMap.samples; // already filtered + time-ordered
+    this.samples = trackMap.samples;
 
-    // A JS constructor's bare `return` still yields a truthy `this`, so
-    // `if (this.scrubber)` can't tell a fully-built scrubber from one that
-    // bailed here. Callers check `this.mounted` instead.
+    
     this.mounted = false;
     this.strip = document.getElementById("scrubber");
     this.playButton = document.getElementById("scrub-play");
     this.range = document.getElementById("scrub-range");
-    this.readout = document.getElementById("scrub-readout");
-    if (!this.strip || !this.playButton || !this.range || !this.readout || this.samples.length < 2) return;
+    if (!this.strip || !this.playButton || !this.range || this.samples.length < 2) return;
 
     this.playing = false;
     this.rafId = null;
-    this.relMs = 0; // current time, RELATIVE to the domain start (0..span)
+    this.relMs = 0; // current time, RELATIVE to the domain start 
 
     this.dot = L.circleMarker(
       [this.samples[0].lat, this.samples[0].lon],
@@ -62,17 +47,13 @@ class TrackScrubber {
 
   bindControls() {
     this.playButton.addEventListener("click", () => this.togglePlay());
-    // "input" (not just "change") fires continuously while dragging, so the
-    // dot tracks the thumb live. Dragging while playing pauses playback.
+    // "input" fires continuously while dragging, so the dot tracks the thumb live
     this.range.addEventListener("input", () => {
       if (this.playing) this.pause();
       this.setTime(Number(this.range.value));
     });
   }
 
-  // The samples that make up the current time domain: the isolated lap's
-  // samples when one is selected, otherwise the whole session. Falls back to
-  // the session if a lap somehow has fewer than 2 samples.
   domainSamplesFor() {
     const lap = this.trackMap.selectedLap;
     if (lap === null) return this.samples;
@@ -94,13 +75,16 @@ class TrackScrubber {
     this.relMs = Math.max(0, Math.min(this.span, relMs));
     this.range.value = String(this.relMs);
     this.root.dataset.scrubMs = String(Math.round(this.relMs));
-    this.readout.textContent = `${formatTime(this.relMs)} / ${formatTime(this.span)}`;
+    // Paint the red "played" portion of the track (WebKit reads this var; on
+    // Firefox ::-moz-range-progress handles the fill natively).
+    const pct = this.span > 0 ? (this.relMs / this.span) * 100 : 0;
+    this.range.style.setProperty("--scrub-fill", `${pct}%`);
     const [lat, lon] = this.positionAt(this.domainStart + this.relMs);
     this.dot.setLatLng([lat, lon]);
   }
 
-  // Linear interpolation of lat/lon at an ABSOLUTE offset time, between the
-  // bracketing sample pair. Glides across GPS gaps with no special handling.
+  // Linear interpolation of lat/lon at an abs offset time, between the
+  // bracketing sample pair for smooth dot motion
   positionAt(absMs) {
     const s = this.domainSamples;
     if (absMs <= s[0].t) return [s[0].lat, s[0].lon];
@@ -120,7 +104,6 @@ class TrackScrubber {
 
   play() {
     if (this.playing || this.span <= 0) return;
-    // Reaching the end pauses at the end; play again restarts from the start.
     if (this.relMs >= this.span) this.setTime(0);
     this.playing = true;
     this.updatePlayButton();
@@ -142,7 +125,7 @@ class TrackScrubber {
     else this.play();
   }
 
-  // Advance current time by real elapsed wall-clock time (1x playback).
+  // Advance current time by real elapsed time
   tick(now) {
     if (!this.playing) return;
     const delta = now - this.lastFrame;
@@ -150,7 +133,7 @@ class TrackScrubber {
     const next = this.relMs + delta;
     if (next >= this.span) {
       this.setTime(this.span);
-      this.pause(); // reach the end -> pause, no loop
+      this.pause();
       return;
     }
     this.setTime(next);
@@ -164,9 +147,7 @@ class TrackScrubber {
     if (icon) icon.className = this.playing ? "bi bi-pause-fill" : "bi bi-play-fill";
   }
 
-  // Called by LeafletTrackMap whenever the isolated lap changes (including the
-  // best-lap auto-select on load). Any domain change pauses and resets to the
-  // domain start — carrying a mid-lap time across laps is silently wrong.
+  // Called by LeafletTrackMap whenever the isolated lap changes and resets the time to 0
   handleSelectionChange() {
     this.pause();
     this.setDomain();

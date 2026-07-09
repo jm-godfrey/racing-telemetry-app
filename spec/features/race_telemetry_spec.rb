@@ -100,7 +100,7 @@ RSpec.feature "Race telemetry", js: true do
     expect(race.reload.start_finish_set?).to be(true)
   end
 
-  scenario "renders the scrubber controls with a position/time readout" do
+  scenario "renders the scrubber controls" do
     race = create(:race, user: user, status: :ready, sample_count: 2)
     create(:telemetry_sample, race: race, sequence: 0, offset_ms: 0, lat: 53.0, lon: -1.0, speed: 10)
     create(:telemetry_sample, race: race, sequence: 1, offset_ms: 90_000, lat: 53.001, lon: -1.001, speed: 20)
@@ -108,12 +108,12 @@ RSpec.feature "Race telemetry", js: true do
     visit race_path(race)
 
     expect(page).to have_css("#scrub-play")
-    expect(page).to have_css("#scrub-range")
-    expect(page).to have_css("#scrub-readout", text: "0:00.000 / 1:30.000")
+    # The range spans the whole domain; its max is the session span in ms.
+    expect(page).to have_css("#scrub-range[max='90000']")
     expect(page).to have_css("#track-map[data-scrub-ms='0']")
   end
 
-  scenario "scrubbing the slider updates the readout and data-scrub-ms" do
+  scenario "scrubbing the slider updates data-scrub-ms" do
     race = create(:race, user: user, status: :ready, sample_count: 2)
     create(:telemetry_sample, race: race, sequence: 0, offset_ms: 0, lat: 53.0, lon: -1.0, speed: 10)
     create(:telemetry_sample, race: race, sequence: 1, offset_ms: 90_000, lat: 53.001, lon: -1.001, speed: 20)
@@ -124,7 +124,6 @@ RSpec.feature "Race telemetry", js: true do
     find("#scrub-range").send_keys(:end)
 
     expect(page).to have_css("#track-map[data-scrub-ms='90000']")
-    expect(page).to have_css("#scrub-readout", text: "1:30.000 / 1:30.000")
   end
 
   scenario "the time domain follows the selected lap and resets on deselect" do
@@ -136,12 +135,12 @@ RSpec.feature "Race telemetry", js: true do
 
     visit race_path(race)
 
-    # Best lap auto-selected on load: domain total is the lap's span.
-    expect(page).to have_css("#scrub-readout", text: "0:00.000 / 1:30.000")
+    # Best lap auto-selected on load: the range spans the lap (90s).
+    expect(page).to have_css("#scrub-range[max='90000']")
 
     # Deselect (click the active lap row): domain becomes the whole session.
     find("tr[data-lap-id='#{lap.id}']").click
-    expect(page).to have_css("#scrub-readout", text: "0:00.000 / 2:00.000")
+    expect(page).to have_css("#scrub-range[max='120000']")
     expect(page).to have_css("#track-map[data-scrub-ms='0']")
   end
 

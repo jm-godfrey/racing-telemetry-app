@@ -3,7 +3,7 @@ Rails.application.routes.draw do
 
   devise_for :users
 
-  resources :races, only: %i[index new create show destroy] do
+  resources :races, only: %i[index new create show update destroy] do
     member do
       patch :start_finish
     end

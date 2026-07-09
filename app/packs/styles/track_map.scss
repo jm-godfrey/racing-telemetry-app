@@ -8,7 +8,251 @@
   background: #2a3b4c;
 }
 
-// Let the range input actually shrink/grow inside the flex control strip.
+// Scrubber control strip: a sleek black pill with red accents.
+$scrub-red: #e10600;
+$scrub-red-bright: #ff1a0d;
+
+#scrubber {
+  background: #0d0d0d;
+  border: 1px solid #262626;
+  border-radius: 999px;
+  padding: 0.375rem 0.875rem;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.25);
+}
+
+// Round play/pause button — white face, red glyph.
+#scrub-play.scrub-btn {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: #fff;
+  color: $scrub-red;
+  font-size: 1.05rem;
+  line-height: 1;
+  transition: background-color 0.15s ease, color 0.15s ease, transform 0.1s ease;
+
+  &:hover { background: #f0f0f0; color: $scrub-red-bright; }
+  &:active { transform: scale(0.92); }
+  &:focus-visible {
+    outline: 2px solid $scrub-red;
+    outline-offset: 2px;
+  }
+
+  .bi { display: block; }
+}
+
+// Native range restyled: thin dark track, red "played" fill, white thumb.
+// min-width:0 lets it actually shrink/grow inside the flex pill.
 #scrub-range {
+  --scrub-fill: 0%;
   min-width: 0;
+  height: 1.25rem;
+  appearance: none;
+  -webkit-appearance: none;
+  background: transparent;
+  cursor: pointer;
+
+  // ----- WebKit / Blink -----
+  &::-webkit-slider-runnable-track {
+    height: 4px;
+    border-radius: 2px;
+    background: linear-gradient(
+      to right,
+      #{$scrub-red} 0%,
+      #{$scrub-red} var(--scrub-fill),
+      #3a3a3a var(--scrub-fill),
+      #3a3a3a 100%
+    );
+  }
+  &::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    margin-top: -5px; // centre the 14px thumb on the 4px track
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: #fff;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
+    transition: transform 0.1s ease;
+  }
+  &:hover::-webkit-slider-thumb { transform: scale(1.15); }
+  &:focus-visible {
+    outline: none;
+    &::-webkit-slider-thumb {
+      box-shadow: 0 0 0 3px rgba($scrub-red, 0.5);
+    }
+  }
+
+  // ----- Firefox -----
+  &::-moz-range-track {
+    height: 4px;
+    border-radius: 2px;
+    background: #3a3a3a;
+  }
+  &::-moz-range-progress {
+    height: 4px;
+    border-radius: 2px;
+    background: $scrub-red;
+  }
+  &::-moz-range-thumb {
+    width: 14px;
+    height: 14px;
+    border: 0;
+    border-radius: 50%;
+    background: #fff;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
+  }
+  &:focus-visible::-moz-range-thumb {
+    box-shadow: 0 0 0 3px rgba($scrub-red, 0.5);
+  }
+}
+
+// Bolder, consistent frame around both the map panel and the lap-table panel
+// so the two columns read as one system.
+.card.panel-card {
+  border: 2px solid #1a1a1a;
+  border-radius: 0.75rem;
+}
+
+// Race title: bold, with a red accent bar tying into the theme.
+.race-title {
+  font-weight: 800;
+  font-size: 1.9rem;
+  letter-spacing: -0.01em;
+  line-height: 1.1;
+  padding-left: 0.75rem;
+  border-left: 4px solid $scrub-red;
+}
+
+// Kebab (⋮) options button — round white face, red on hover/open.
+.race-options-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  padding: 0;
+  border: 1px solid #d5d5d5;
+  border-radius: 50%;
+  background: #fff;
+  color: #111;
+  font-size: 1.15rem;
+  line-height: 1;
+  transition: border-color 0.15s ease, color 0.15s ease;
+
+  &:hover,
+  &.show {
+    border-color: $scrub-red;
+    color: $scrub-red;
+  }
+  &:focus-visible {
+    outline: 2px solid $scrub-red;
+    outline-offset: 2px;
+  }
+}
+
+// Filled red accent button (e.g. modal Save).
+.btn-accent {
+  padding: 0.4rem 1.1rem;
+  border: 0;
+  border-radius: 999px;
+  background: $scrub-red;
+  color: #fff;
+  font-size: 0.9rem;
+  font-weight: 600;
+  line-height: 1.2;
+  transition: background-color 0.15s ease;
+
+  &:hover { background: $scrub-red-bright; color: #fff; }
+  &:focus-visible {
+    outline: 2px solid $scrub-red;
+    outline-offset: 2px;
+  }
+}
+
+// Header strip above the map: lap info on the left, action on the right.
+.track-map-caption {
+  font-weight: 600;
+  font-size: 0.95rem;
+  color: #6c757d;
+}
+
+// Sleek pill action button (Set start/finish line) — white face, red on hover.
+.map-action-btn {
+  flex: 0 0 auto;
+  padding: 0.35rem 0.9rem;
+  border: 1px solid #d5d5d5;
+  border-radius: 999px;
+  background: #fff;
+  color: #111;
+  font-size: 0.85rem;
+  font-weight: 600;
+  line-height: 1.2;
+  transition: border-color 0.15s ease, color 0.15s ease;
+
+  &:hover {
+    border-color: $scrub-red;
+    color: $scrub-red;
+  }
+  &:focus-visible {
+    outline: 2px solid $scrub-red;
+    outline-offset: 2px;
+  }
+}
+
+// Satellite toggle: a switch overlaid in the map's top-right corner.
+.map-switch {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin: 0;
+  padding: 0.3rem 0.5rem;
+  border: 0;
+  border-radius: 999px;
+  background: rgba(13, 13, 13, 0.82);
+  color: #fff;
+  font-size: 0.78rem;
+  font-weight: 600;
+  line-height: 1;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.35);
+  backdrop-filter: blur(4px);
+  transition: background-color 0.15s ease;
+
+  &__icon { font-size: 0.9rem; }
+  &__label { white-space: nowrap; }
+
+  // The switch track + sliding knob.
+  &__track {
+    position: relative;
+    flex: 0 0 auto;
+    width: 30px;
+    height: 16px;
+    border-radius: 999px;
+    background: #4a4a4a;
+    transition: background-color 0.15s ease;
+  }
+  &__knob {
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: #fff;
+    transition: transform 0.15s ease;
+  }
+
+  &.active &__track { background: $scrub-red; }
+  &.active &__knob { transform: translateX(14px); }
+
+  &:focus-visible {
+    outline: 2px solid #fff;
+    outline-offset: 2px;
+  }
 }

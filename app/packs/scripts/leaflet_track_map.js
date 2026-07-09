@@ -7,9 +7,6 @@ import TrackScrubber from "./track_scrubber";
 
 const ESRI_IMAGERY_URL =
   "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}";
-const ESRI_ATTRIBUTION =
-  "Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, " +
-  "GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community";
 
 function speedColor(speed, min, max) {
   const ratio = max > min ? (speed - min) / (max - min) : 0;
@@ -34,7 +31,7 @@ class LeafletTrackMap {
     this.initMap();
     this.buildSegments();
     this.buildStartFinish();
-    this.bindBasemapToggle();
+    this.addBasemapControl();
     this.bindPlacement();
     this.bindLapSelection();
     this.scrubber = new TrackScrubber(this);
@@ -42,7 +39,13 @@ class LeafletTrackMap {
   }
 
   initMap() {
-    this.map = L.map(this.container, { minZoom: 10, maxZoom: 19 });
+    // No attribution control — private-use app, and the abstract view has no
+    // tiles to credit. (Esri imagery is only shown to the single owner.)
+    this.map = L.map(this.container, {
+      minZoom: 10,
+      maxZoom: 19,
+      attributionControl: false,
+    });
     // One shared canvas renderer: thousands of segments stay a single fast
     // canvas draw instead of thousands of SVG nodes.
     this.renderer = L.canvas({ padding: 0.5 });
@@ -51,7 +54,6 @@ class LeafletTrackMap {
     this.resetView();
     // Builds tile requests but doesnt add - the Satellite toggle adds/removes it
     this.tiles = L.tileLayer(ESRI_IMAGERY_URL, {
-      attribution: ESRI_ATTRIBUTION,
       maxZoom: 19,
     });
     this.addResetControl();
@@ -127,20 +129,39 @@ class LeafletTrackMap {
     this.startFinishLines.forEach((line) => line.addTo(this.lineGroup));
   }
 
-  bindBasemapToggle() {
-    const button = document.getElementById("toggle-basemap");
-    if (!button) return;
-    button.addEventListener("click", () => {
-      const on = this.root.dataset.basemap !== "on";
-      this.root.dataset.basemap = on ? "on" : "off";
-      button.classList.toggle("active", on);
-      button.setAttribute("aria-pressed", String(on));
-      if (on) {
-        this.tiles.addTo(this.map);
-      } else {
-        this.tiles.remove();
-      }
+  // Satellite basemap toggle rendered as a switch overlaid in the map's
+  // top-right corner (a Leaflet control, so it stays put and doesn't pan the
+  // map when clicked). Keeps #toggle-basemap / aria-pressed / .active intact.
+  addBasemapControl() {
+    const self = this;
+    const BasemapControl = L.Control.extend({
+      onAdd() {
+        const btn = L.DomUtil.create("button", "map-switch");
+        btn.id = "toggle-basemap";
+        btn.type = "button";
+        btn.setAttribute("aria-pressed", "false");
+        btn.setAttribute("aria-label", "Satellite");
+        btn.innerHTML =
+          '<i class="bi bi-globe-americas map-switch__icon"></i>' +
+          '<span class="map-switch__label">Satellite</span>' +
+          '<span class="map-switch__track"><span class="map-switch__knob"></span></span>';
+        L.DomEvent.disableClickPropagation(btn);
+        L.DomEvent.disableScrollPropagation(btn);
+        L.DomEvent.on(btn, "click", () => {
+          const on = self.root.dataset.basemap !== "on";
+          self.root.dataset.basemap = on ? "on" : "off";
+          btn.classList.toggle("active", on);
+          btn.setAttribute("aria-pressed", String(on));
+          if (on) {
+            self.tiles.addTo(self.map);
+          } else {
+            self.tiles.remove();
+          }
+        });
+        return btn;
+      },
     });
+    new BasemapControl({ position: "topright" }).addTo(this.map);
   }
 
   bindPlacement() {
