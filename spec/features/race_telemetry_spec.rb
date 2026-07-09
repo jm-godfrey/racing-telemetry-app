@@ -99,4 +99,80 @@ RSpec.feature "Race telemetry", js: true do
     expect(page).to have_content("Detecting laps")
     expect(race.reload.start_finish_set?).to be(true)
   end
+
+  scenario "renders the scrubber controls with a position/time readout" do
+    race = create(:race, user: user, status: :ready, sample_count: 2)
+    create(:telemetry_sample, race: race, sequence: 0, offset_ms: 0, lat: 53.0, lon: -1.0, speed: 10)
+    create(:telemetry_sample, race: race, sequence: 1, offset_ms: 90_000, lat: 53.001, lon: -1.001, speed: 20)
+
+    visit race_path(race)
+
+    expect(page).to have_css("#scrub-play")
+    expect(page).to have_css("#scrub-range")
+    expect(page).to have_css("#scrub-readout", text: "0:00.000 / 1:30.000")
+    expect(page).to have_css("#track-map[data-scrub-ms='0']")
+  end
+
+  scenario "scrubbing the slider updates the readout and data-scrub-ms" do
+    race = create(:race, user: user, status: :ready, sample_count: 2)
+    create(:telemetry_sample, race: race, sequence: 0, offset_ms: 0, lat: 53.0, lon: -1.0, speed: 10)
+    create(:telemetry_sample, race: race, sequence: 1, offset_ms: 90_000, lat: 53.001, lon: -1.001, speed: 20)
+
+    visit race_path(race)
+
+    # End jumps a native range to its max (the full domain span).
+    find("#scrub-range").send_keys(:end)
+
+    expect(page).to have_css("#track-map[data-scrub-ms='90000']")
+    expect(page).to have_css("#scrub-readout", text: "1:30.000 / 1:30.000")
+  end
+
+  scenario "the time domain follows the selected lap and resets on deselect" do
+    race = create(:race, user: user, status: :ready, sample_count: 3)
+    lap = create(:lap, race: race, number: 1, best: true, lap_time_ms: 90_000)
+    create(:telemetry_sample, race: race, lap: lap, sequence: 0, offset_ms: 0, lat: 53.0, lon: -1.0, speed: 10)
+    create(:telemetry_sample, race: race, lap: lap, sequence: 1, offset_ms: 90_000, lat: 53.001, lon: -1.001, speed: 20)
+    create(:telemetry_sample, race: race, sequence: 2, offset_ms: 120_000, lat: 53.002, lon: -1.002, speed: 5)
+
+    visit race_path(race)
+
+    # Best lap auto-selected on load: domain total is the lap's span.
+    expect(page).to have_css("#scrub-readout", text: "0:00.000 / 1:30.000")
+
+    # Deselect (click the active lap row): domain becomes the whole session.
+    find("tr[data-lap-id='#{lap.id}']").click
+    expect(page).to have_css("#scrub-readout", text: "0:00.000 / 2:00.000")
+    expect(page).to have_css("#track-map[data-scrub-ms='0']")
+  end
+
+  scenario "play advances the dot in real time and pause freezes it" do
+    race = create(:race, user: user, status: :ready, sample_count: 2)
+    create(:telemetry_sample, race: race, sequence: 0, offset_ms: 0, lat: 53.0, lon: -1.0, speed: 10)
+    create(:telemetry_sample, race: race, sequence: 1, offset_ms: 90_000, lat: 53.001, lon: -1.001, speed: 20)
+
+    visit race_path(race)
+
+    find("#scrub-play").click
+    expect(page).to have_css("#scrub-play[aria-pressed='true']")
+    # Advanced past the start within the Capybara wait window.
+    expect(page).to have_no_css("#track-map[data-scrub-ms='0']")
+
+    find("#scrub-play").click
+    expect(page).to have_css("#scrub-play[aria-pressed='false']")
+
+    frozen = find("#track-map")["data-scrub-ms"]
+    sleep 0.4
+    expect(find("#track-map")["data-scrub-ms"]).to eq(frozen)
+  end
+
+  scenario "does not show scrubber controls when the map cannot mount" do
+    race = create(:race, user: user, status: :ready, sample_count: 1)
+    create(:telemetry_sample, race: race, sequence: 0, offset_ms: 0, lat: 53.0, lon: -1.0, speed: 10)
+
+    visit race_path(race)
+
+    expect(page).to have_content("Ready")
+    expect(page).to have_no_css("#scrub-play")
+    expect(page).to have_no_css("#scrub-range")
+  end
 end

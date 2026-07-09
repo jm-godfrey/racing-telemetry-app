@@ -7,3 +7,8 @@
 #track-map[data-basemap="off"] .leaflet-container {
   background: #2a3b4c;
 }
+
+// Let the range input actually shrink/grow inside the flex control strip.
+#scrub-range {
+  min-width: 0;
+}

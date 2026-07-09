@@ -3,6 +3,7 @@
 // (off by default to support offline), and click-to-place the start/finish
 // line. Replaces scripts/track_map.js
 import L from "leaflet";
+import TrackScrubber from "./track_scrubber";
 
 const ESRI_IMAGERY_URL =
   "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}";
@@ -36,6 +37,7 @@ class LeafletTrackMap {
     this.bindBasemapToggle();
     this.bindPlacement();
     this.bindLapSelection();
+    this.scrubber = new TrackScrubber(this);
     this.selectDefaultLap();
   }
 
@@ -217,6 +219,7 @@ class LeafletTrackMap {
     this.updateCaption();
     // switching laps keeps the user's pan/zoom to help comparison
     this.redraw();
+    if (this.scrubber && this.scrubber.mounted) this.scrubber.handleSelectionChange();
   }
 
   updateCaption() {

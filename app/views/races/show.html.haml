@@ -20,6 +20,11 @@
                             start_finish: { lat_a: @race.start_finish_lat_a, lon_a: @race.start_finish_lon_a, lat_b: @race.start_finish_lat_b, lon_b: @race.start_finish_lon_b }.to_json,
                             update_url: start_finish_race_path(@race) } }
           .track-map-leaflet.w-100
+          #scrubber.d-none.d-flex.align-items-center.gap-2.mt-3
+            %button#scrub-play.btn.btn-outline-secondary.btn-sm{ type: "button", "aria-pressed": "false", "aria-label": "Play" }
+              %i.bi.bi-play-fill
+            %input#scrub-range.form-range.flex-grow-1{ type: "range", min: "0", value: "0", step: "1" }
+            %span#scrub-readout.text-body-secondary.font-monospace 0:00.000 / 0:00.000
           .d-flex.align-items-center.justify-content-between.mt-3
             %span#lap-caption.fw-semibold.text-body-secondary
             %div
